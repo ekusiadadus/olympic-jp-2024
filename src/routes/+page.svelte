@@ -10,8 +10,8 @@
 		TableRow
 	} from '$lib/components/ui/table';
 	import { Input } from '$lib/components/ui/input';
-	import { Popover, PopoverContent, PopoverTrigger } from "$lib/components/ui/popover";
-  import { Button } from "$lib/components/ui/button";
+	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
+	import { Button } from '$lib/components/ui/button';
 	import { onMount } from 'svelte';
 
 	const japanScheduleQuery = createQuery({
@@ -29,6 +29,15 @@
 		}
 	});
 
+	function getFlagEmoji(countryCode) {
+		if (!countryCode) return '🏳️'; // デフォルトの旗を返す
+
+		const codePoints = countryCode
+			.toUpperCase()
+			.split('')
+			.map((char) => 127397 + char.charCodeAt());
+		return String.fromCodePoint(...codePoints);
+	}
 	function getResultDisplay(competitor) {
 		if (!competitor.results || competitor.results.mark === undefined) {
 			return '試合前';
@@ -101,7 +110,7 @@
 						<TableHead class="w-1/7">日付</TableHead>
 						<TableHead class="w-1/7">開始時間</TableHead>
 						<TableHead class="w-1/7">会場</TableHead>
-						<TableHead class="w-1/7">対戦相手</TableHead>
+						<TableHead class="w-1/7">対戦相手 🇯🇵</TableHead>
 						<TableHead class="w-1/7">結果</TableHead>
 					</TableRow>
 				</TableHeader>
@@ -124,6 +133,7 @@
 									<Popover>
 										<PopoverTrigger asChild>
 											<Button variant="outline" class="w-full">
+												{getFlagEmoji(unit.competitors.find((c) => c.noc !== 'JPN').noc)}
 												{getOpponents(unit.competitors)[0]}
 												{#if getOpponents(unit.competitors).length > 1}
 													<span class="ml-1">+{getOpponents(unit.competitors).length - 1}</span>
@@ -135,7 +145,12 @@
 												<div class="space-y-2">
 													<h4 class="font-medium leading-none">対戦相手</h4>
 													<p class="text-sm text-muted-foreground">
-														{getOpponents(unit.competitors).join(', ')}
+														{#each getOpponents(unit.competitors) as opponent, i}
+															{getFlagEmoji(unit.competitors.find((c) => c.name === opponent).noc)}
+															{opponent}
+															{#if i < getOpponents(unit.competitors).length - 1},
+															{/if}
+														{/each}
 													</p>
 												</div>
 											</div>
